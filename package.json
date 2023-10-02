@@ -1,0 +1,26 @@
+{
+  "name": "node-gmp-app",
+  "version": "1.0.0",
+  "description": "Express application for online shop which sells different types of products (like e.g Amazon). It has functionality for managing carts, creating orders and products.",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/375291601334/Node-GMP-App.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/375291601334/Node-GMP-App/issues"
+  },
+  "homepage": "https://github.com/375291601334/Node-GMP-App#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.18",
+    "@types/node": "^20.8.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
