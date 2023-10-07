@@ -14,6 +14,10 @@ export const postOrderHandler = async (
       res.status(404);
       res.send({ data: null, error: { message: `Cart for user ${req.userId} not found!` }});
       return;
+    } else if (cart.items.length == 0) {
+      res.status(400);
+      res.send({ data: null, error: { message: `Cart for user ${req.userId} is empty!` }});
+      return;    
     } else { 
       const order = await createOrder(req.userId, cart);
       res.send({ data: { order }, error: null });
