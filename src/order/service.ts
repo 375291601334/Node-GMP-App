@@ -1,11 +1,9 @@
-import { Order, User, ORDER_STATUS } from '../types';
+import { Order, User, ORDER_STATUS, Cart } from '../types';
 import { generateUUID } from '../utils';
 import * as repository from './repository';
-import { getCartForUser, getCartTotalPrice } from '../cart/service';
+import { getCartTotalPrice } from '../cart/service';
 
-export const createOrderForUser = async (userId: User['id']): Promise<Order> => {
-  const cart = await getCartForUser(userId);
-
+export const createOrder = async (userId: User['id'], cart: Cart): Promise<Order> => {
   const newOrder = {
     id: generateUUID(),
     userId,

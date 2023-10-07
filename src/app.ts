@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { deleteCartHandler, getCartHandler, postCartHandler, updateCartHandler } from './cart/controller';
+import bodyParser from 'body-parser';
+import { deleteCartHandler, getCartHandler, updateCartHandler } from './cart/controller';
 import { postOrderHandler } from './order/controller';
 import { getProductHandler, getProductsHandler } from './product/controller';
 import { authValidation } from './user/controller';
@@ -11,7 +12,6 @@ const app = express();
 const cartRouter = express.Router();
 const productsRouter = express.Router();
 
-cartRouter.post('/', postCartHandler);
 cartRouter.get('/', getCartHandler);
 cartRouter.put('/', updateCartHandler);
 cartRouter.delete('/', deleteCartHandler);
@@ -24,6 +24,8 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
   res.status(500);
   res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
 };
+
+app.use(bodyParser.json());
 
 app.use('/api', authValidation);
 

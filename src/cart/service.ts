@@ -1,12 +1,9 @@
 import { Cart, CartItemDataEntity, User } from '../types';
 import * as repository from './repository';
 
-export const getCartForUser = async (userId: User['id']): Promise<Cart> => {
+export const getCartForUser = async (userId: User['id']): Promise<Cart | null> => {
   const userCart = await repository.getCartForUser(userId);
-
-  if (userCart) return userCart;
-
-  throw new Error(`Cart for user ${userId} not found!`);
+  return userCart;
 }
 
 export const createCartForUser = async (userId: User['id']): Promise<Cart> => {  
@@ -14,17 +11,13 @@ export const createCartForUser = async (userId: User['id']): Promise<Cart> => {
   return cart;
 };
 
-export const deleteCartForUser = async (userId: User['id']): Promise<boolean> => {
-  const cart = await getCartForUser(userId);
-
-  const isCartDeleted = await repository.deleteCart(cart.id);
+export const deleteCart = async (cartId: Cart['id']): Promise<boolean> => {
+  const isCartDeleted = await repository.deleteCart(cartId);
   return isCartDeleted;
 };
 
-export const updateCartItemsForUser = async (userId: User['id'], item: CartItemDataEntity): Promise<Cart | null> => {
-  const cart = await getCartForUser(userId);
-  
-  const updatedCart = await repository.updateCartItems(cart.id, item);
+export const updateCartItems = async (cartId: Cart['id'], item: CartItemDataEntity): Promise<Cart | null> => {  
+  const updatedCart = await repository.updateCartItems(cartId, item);
   return updatedCart;
 };
 
