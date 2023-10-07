@@ -9,6 +9,11 @@ export interface Product {
   price: number;
 }
 
+export interface CartItemDataEntity {
+  productId: Product['id'];
+  count: number;
+}
+
 export interface CartItem {
   product: Product;
   count: number;

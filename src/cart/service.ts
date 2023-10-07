@@ -1,4 +1,4 @@
-import { Cart, User } from '../types';
+import { Cart, CartItemDataEntity, User } from '../types';
 import * as repository from './repository';
 
 export const getCartForUser = async (userId: User['id']): Promise<Cart> => {
@@ -21,10 +21,10 @@ export const deleteCartForUser = async (userId: User['id']): Promise<boolean> =>
   return isCartDeleted;
 };
 
-export const updateCartItemsForUser = async (userId: User['id'], items: Cart['items']): Promise<Cart | null> => {
+export const updateCartItemsForUser = async (userId: User['id'], item: CartItemDataEntity): Promise<Cart | null> => {
   const cart = await getCartForUser(userId);
   
-  const updatedCart = await repository.updateCartItems(cart.id, items);
+  const updatedCart = await repository.updateCartItems(cart.id, item);
   return updatedCart;
 };
 

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
-import { Cart, ResponseBody } from '../types';
+import joi, { ValidationResult } from 'joi';
+import { Cart, CartItemDataEntity, ResponseBody } from '../types';
 import { getCartForUser, createCartForUser, deleteCartForUser, updateCartItemsForUser, getCartTotalPrice } from './service';
+import { getProduct } from '../product/service';
 
 export const getCartHandler = async (
   req: Request,
@@ -46,12 +48,43 @@ export const deleteCartHandler = async (
   }
 };
 
+const validateCartItem = (cartItem: CartItemDataEntity): ValidationResult<CartItemDataEntity> => {
+  const schema = joi.object({
+    productId: joi.string()
+      .guid()
+      .min(1)
+      .max(50)
+      .required(),
+
+    count: joi.number()
+      .integer()
+      .required(),
+  });
+
+  const { error, value } = schema.validate({ username: 'abc', birth_year: 1994 });
+  return { error, value };
+}
+
 export const updateCartHandler = async (
-  req: Request<any, any, Partial<Cart>>,
+  req: Request<any, any, CartItemDataEntity>,
   res: Response<ResponseBody<{ cart: Cart, totalPrice: number }>>,
 ) => {
   try {
-    const cart = await updateCartItemsForUser(req.userId, req.body.items || []);
+    const { error: validationError, value: cartItem } = validateCartItem(req.body);
+
+    if (validationError) {
+      res.status(400);
+      res.send({ data: null, error: { message: validationError.message }});
+    }
+
+    try {
+      getProduct(cartItem.productId);
+    } catch (err) {
+      res.status(404);
+      res.send({ data: null, error: { message: (err as Error).message }});
+    }
+
+    const cart = await updateCartItemsForUser(req.userId, cartItem);
 
     if (cart) {
       const totalPrice = getCartTotalPrice(cart);

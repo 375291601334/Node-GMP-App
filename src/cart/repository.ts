@@ -1,4 +1,4 @@
-import { CartDataEntity, User, Cart } from '../types';
+import { CartDataEntity, User, Cart, CartItemDataEntity } from '../types';
 import { generateUUID } from '../utils';
 import * as productRepository from '../product/repository';
 
@@ -50,12 +50,8 @@ export const createCart = async (userId: User['id']): Promise<Cart> => {
   return await modifyCart(cart);
 };
 
-const updateCart = async (cartId: CartDataEntity['id'], cartData: Partial<CartDataEntity>): Promise<CartDataEntity | null> => {
-  const cartToUpdate = carts.find((cart) => cart.id === cartId);
-
-  if (!cartToUpdate) return null;
-
-  const updatedCart = { ...cartToUpdate, ...cartData };
+const updateCart = (cartToUpdate: CartDataEntity, data: Partial<CartDataEntity>): CartDataEntity => {
+  const updatedCart = { ...cartToUpdate, ...data };
 
   carts = carts.map((cart) => {
     if (cart.id === cartToUpdate.id) return updatedCart;
@@ -63,16 +59,35 @@ const updateCart = async (cartId: CartDataEntity['id'], cartData: Partial<CartDa
   });
 
   return updatedCart;
-};
+}
 
 export const deleteCart = async (cartId: CartDataEntity['id']): Promise<boolean> => {
-  const deletedCart = await updateCart(cartId, { isDeleted: true });
-  return !!deletedCart;
+  const cartToDelete = carts.find((cart) => cart.id === cartId);
+
+  if (!cartToDelete) return false;
+
+  updateCart(cartToDelete, { isDeleted: true });
+  return true;
 };
 
-export const updateCartItems = async (cartId: CartDataEntity['id'], items: Cart['items']): Promise<Cart | null> => {
-  const itemsToSave = items.map(({ product, count }) => ({ productId: product.id, count }));
+export const updateCartItems = async (cartId: CartDataEntity['id'], item: CartItemDataEntity): Promise<Cart | null> => {
+  const cartToUpdate = carts.find((cart) => cart.id === cartId);
 
-  const updatedCart = await updateCart(cartId, { items: itemsToSave });
-  return updatedCart ? await modifyCart(updatedCart) : null;
+  if (!cartToUpdate) return null;
+
+  let isNewItem = true;
+  const itemsToSave = cartToUpdate.items.reduce((itemsToSave, { productId, count }) => {
+    if (productId === item.productId) {
+      isNewItem = false;
+      if (item.count === 0) return itemsToSave; // delete item from cart
+      return [ ...itemsToSave, { productId, count: item.count }]; // change items count
+    }
+
+    return [ ...itemsToSave, { productId, count }];
+  }, [] as CartDataEntity['items']);
+
+  if (isNewItem) itemsToSave.push(item); // add new item to cart
+
+  const updatedCart = updateCart(cartToUpdate, { items: itemsToSave });
+  return await modifyCart(updatedCart);
 };
