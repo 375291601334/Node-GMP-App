@@ -6,10 +6,7 @@ export const getProducts = async (): Promise<Product[]> => {
   return products;
 };
 
-export const getProduct = async (productId: Product['id']): Promise<Product> => {
+export const getProduct = async (productId: Product['id']): Promise<Product | null> => {
   const product = await repository.getProduct(productId);
-
-  if (product) return product;
-
-  throw new Error(`Product ${productId} not found!`);
+  return product;
 };

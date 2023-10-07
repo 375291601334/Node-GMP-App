@@ -15,12 +15,13 @@ export const getProductHandler = async (
   res: Response<ResponseBody<Product>>,
 ) => {
   const { productId } = req.params;
+  const product = await getProduct(productId);
 
-  try {
-    const product = await getProduct(productId);
-    res.send({ data: product, error: null });
-  } catch (err) {
+  if (!product) {
     res.status(404);
-    res.send({ data: null, error: { message: (err as Error).message }});
+    res.send({ data: null, error: { message: `Product ${productId} was not found!` }});
+    return;
   }
+
+  res.send({ data: product, error: null });
 };
