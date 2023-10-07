@@ -1,10 +1,7 @@
 import { User } from '../types';
 import * as repository from './repository';
 
-export const getUser = async (userId: User['id']): Promise<User> => {
+export const getUser = async (userId: User['id']): Promise<User | null> => {
   const user = await repository.getUser(userId);
-
-  if (user) return user;
-  
-  throw new Error(`User ${userId} not found!`);
+  return user;
 };
