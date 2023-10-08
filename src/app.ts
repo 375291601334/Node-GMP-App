@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 
 app.use('/api', authValidation);
 
-app.use('/api/profile/cart', cartRouter, errorHandler);
+app.use('/api/profile/cart', cartRouter);
 app.use('/api/products', productsRouter);
 
 app.use(errorHandler);
