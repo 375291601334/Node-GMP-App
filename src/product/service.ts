@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product } from '../entities/product';
 import * as repository from './repository';
 
 export const getProducts = async (): Promise<Product[]> => {

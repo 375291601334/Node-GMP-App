@@ -1,9 +1,12 @@
-import { Request, Response } from 'express';
-import { Order, ResponseBody } from '../types';
+import { Request, Response, Router } from 'express';
+import { ResponseBody } from '../types';
+import { Order } from '../entities/order';
 import { createOrder } from './service';
 import { getCartForUser } from '../cart/service';
 
-export const postOrderHandler = async (
+export const orderRouter = Router();
+  
+orderRouter.post('/', async (
   req: Request,
   res: Response<ResponseBody<{ order: Order }>>,
 ) => {
@@ -27,4 +30,4 @@ export const postOrderHandler = async (
     res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
     return;
   }
-};
+});
