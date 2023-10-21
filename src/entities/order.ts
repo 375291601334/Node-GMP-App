@@ -1,5 +1,4 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, Reference, Ref } from '@mikro-orm/core';
-import { Product } from './product';
 import { User } from './user';
 import { Cart } from './cart';
 
@@ -55,7 +54,7 @@ export class Order {
   @Property()
   totalPrice!: number;
 
-  constructor (data: { userId: User['id'], cartId: Cart['id'], items: OrderItems[], totalPrice: number, payment?: Payment, delivery?: Delivery,  comments?: string }) {
+  constructor (data: { userId: User['id'], cartId: Cart['id'], items: OrderItems[], totalPrice: number, payment?: Payment, delivery?: Delivery, comments?: string }) {
     this.user = Reference.createFromPK(User, data.userId);
     this.cart = Reference.createFromPK(Cart, data.cartId);
     this.items = data.items;

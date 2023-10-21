@@ -2,7 +2,6 @@ import { User } from '../entities/user';
 import { Cart } from '../entities/cart';
 import { ItemData } from '../entities/item';
 import * as repository from './repository';
-import { wrap } from '@mikro-orm/core';
 
 export const getCartForUser = async (userId: User['id']): Promise<Cart | null> => {
   const userCart = await repository.getCartForUser(userId);

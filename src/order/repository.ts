@@ -1,4 +1,5 @@
 
+import { deleteCart } from '../cart/repository';
 import { Cart } from '../entities/cart';
 import { Order, OrderItems } from '../entities/order';
 import { User } from '../entities/user';
@@ -17,8 +18,9 @@ export const addOrder = async (userId: User['id'], cart: Cart): Promise<Order> =
   const order = new Order({ userId, cartId: cart.id, items, totalPrice });
   try {
     await DI.em.persistAndFlush(order);
+    await deleteCart(cart);
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
   
   return order;
