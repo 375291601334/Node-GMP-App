@@ -1,21 +1,21 @@
 import { Request, Response, Router } from 'express';
-import { ResponseBody } from '../types';
-import { Product } from '../entities/product';
+import { ResponseBody } from '../models';
+import { IProduct } from './entities';
 import { getProducts, getProduct } from './service';
 
-export const productRouter = Router();
+export const router = Router();
 
-productRouter.get('/', async (
+router.get('/', async (
   req: Request,
-  res: Response<ResponseBody<Product[]>>,
+  res: Response<ResponseBody<IProduct[]>>,
 ) => {
   const products = await getProducts();
   res.send({ data: products, error: null });
 });
 
-productRouter.get('/:productId', async (
+router.get('/:productId', async (
   req: Request<{ productId: string }, any, any>,
-  res: Response<ResponseBody<Product>>,
+  res: Response<ResponseBody<IProduct>>,
 ) => {
   const { productId } = req.params;
   const product = await getProduct(productId);

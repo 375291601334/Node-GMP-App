@@ -1,12 +1,7 @@
-version: '1'
+version: '3.3'
 services:
-  postgres-db:
-    image: "postgres:16"
-    container_name: "node-gmp-db"
-    environment:
-      - POSTGRES_USER=node_gmp
-      - POSTGRES_PASSWORD=password123
-      - POSTGRES_DB=node_gmp
-    restart: always
+  mongo:
     ports:
-      - '5432:5432'
+      - '27017:27017'
+    container_name: dkrcomp-mongo
+    image: mongo

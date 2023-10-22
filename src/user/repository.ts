@@ -1,7 +1,6 @@
 
-import { User } from '../entities/user';
-import { DI } from '../orm';
+import { IUser, User } from './entities';
 
-export const getUser = async (userId: User['id']): Promise<User | null> => {
-  return await DI.userRepository.findOne(userId);
+export const getUser = async (userId: IUser['id']): Promise<IUser | null> => {
+  return await User.findOne({ _id: userId }).exec();
 };

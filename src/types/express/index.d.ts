@@ -1,11 +1,11 @@
-import { User } from '../../types';
+import { IUser } from '../../user';
 
 export {}
 
 declare global {
   namespace Express {
     export interface Request {
-       userId: User['id'];
+       userId: IUser['id'];
     }
   }
 }
