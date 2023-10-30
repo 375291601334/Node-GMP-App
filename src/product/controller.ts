@@ -1,16 +1,19 @@
-import { Request, Response } from 'express';
-import { Product, ResponseBody } from '../types';
+import { Request, Response, Router } from 'express';
+import { ResponseBody } from '../types';
+import { Product } from '../entities/product';
 import { getProducts, getProduct } from './service';
 
-export const getProductsHandler = async (
+export const productRouter = Router();
+
+productRouter.get('/', async (
   req: Request,
   res: Response<ResponseBody<Product[]>>,
 ) => {
   const products = await getProducts();
   res.send({ data: products, error: null });
-};
+});
 
-export const getProductHandler = async (
+productRouter.get('/:productId', async (
   req: Request<{ productId: string }, any, any>,
   res: Response<ResponseBody<Product>>,
 ) => {
@@ -24,4 +27,4 @@ export const getProductHandler = async (
   }
 
   res.send({ data: product, error: null });
-};
+});

@@ -1,4 +1,4 @@
-import { User } from '../types';
+import { User } from '../entities/user';
 import * as repository from './repository';
 
 export const getUser = async (userId: User['id']): Promise<User | null> => {

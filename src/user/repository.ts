@@ -1,12 +1,7 @@
-import { User } from '../types';
 
-const users: User[] = [
-  { id: '0fe36d16-49bc-4aab-a227-f84df899a6cb' },
-  { id: 'eb5a26af-6e4c-4f31-a9b1-3450d42ac66c' },
-];
+import { User } from '../entities/user';
+import { DI } from '../orm';
 
 export const getUser = async (userId: User['id']): Promise<User | null> => {
-  const user = users.find((user) => user.id === userId);
-
-  return user || null;
+  return await DI.userRepository.findOne(userId);
 };

@@ -1,4 +1,6 @@
-import { Cart, CartItemDataEntity, User } from '../types';
+import { User } from '../entities/user';
+import { Cart } from '../entities/cart';
+import { ItemData } from '../entities/item';
 import * as repository from './repository';
 
 export const getCartForUser = async (userId: User['id']): Promise<Cart | null> => {
@@ -11,20 +13,12 @@ export const createCartForUser = async (userId: User['id']): Promise<Cart> => {
   return cart;
 };
 
-export const deleteCart = async (cartId: Cart['id']): Promise<boolean> => {
-  const isCartDeleted = await repository.deleteCart(cartId);
+export const deleteCart = async (cart: Cart): Promise<boolean> => {
+  const isCartDeleted = await repository.deleteCart(cart);
   return isCartDeleted;
 };
 
-export const updateCartItems = async (cartId: Cart['id'], item: CartItemDataEntity): Promise<Cart | null> => {  
-  const updatedCart = await repository.updateCartItems(cartId, item);
+export const updateCartItems = async (cart: Cart, item: ItemData): Promise<Cart | null> => {  
+  const updatedCart = await repository.updateCartItems(cart, item);
   return updatedCart;
-};
-
-export const getCartTotalPrice = (cart: Cart): number => {
-  return cart.items.reduce((totalPrice, item) => {
-    const itemPrice = item.count * item.product.price;
-    totalPrice += itemPrice;
-    return totalPrice;
-  }, 0);
 };

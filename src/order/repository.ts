@@ -1,37 +1,27 @@
-import { Order } from '../types';
 
-const orders: Order[] = [
-  {
-    id: 'dffd6fa8-be6b-47f6-acff-455612620ac2',
-    userId: '0fe36d16-49bc-4aab-a227-f84df899a6cb',
-    cartId: '1434fec6-cd85-420d-95c0-eee2301a971d',
-    items: [
-        {
-        product: {
-          id: '51422fcd-0366-4186-ad5b-c23059b6f64f',
-          title: 'Book',
-          description: 'A very interesting book',
-          price: 100
-        },
-        count: 2,
-      },
-    ],
-    payment: {
-      type: 'paypal',
-      address: undefined,
-      creditCard: undefined
-    },
-    delivery: {
-      type: 'post',
-      address: undefined
-    },
-    comments: '',
-    status: 'created',
-    totalPrice: 200,
-  },
-];
+import { deleteCart } from '../cart/repository';
+import { Cart } from '../entities/cart';
+import { Order, OrderItems } from '../entities/order';
+import { User } from '../entities/user';
+import { DI } from '../orm';
 
-export const addOrder = async (order: Order): Promise<Order> => {
-  orders.push(order);
+export const addOrder = async (userId: User['id'], cart: Cart): Promise<Order> => {
+  const items = await cart.items.reduce(async (acc, item) => {
+    const { id, title, description, price } = await item.product.load();
+    const items = await acc;
+    items.push({ product: { id, title, description, price }, count: item.count });
+    return items;
+  }, Promise.resolve([] as OrderItems[]));
+
+  const totalPrice = await cart.totalPrice;
+
+  const order = new Order({ userId, cartId: cart.id, items, totalPrice });
+  try {
+    await DI.em.persistAndFlush(order);
+    await deleteCart(cart);
+  } catch (e) {
+    console.log(e);
+  }
+  
   return order;
 };
