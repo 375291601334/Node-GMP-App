@@ -1,14 +1,14 @@
 import { Request, Response, Router } from 'express';
-import { ResponseBody } from '../types';
-import { Order } from '../entities/order';
+import { ResponseBody } from '../models';
+import { getCartForUser } from '../cart';
+import { IOrder } from './entities';
 import { createOrder } from './service';
-import { getCartForUser } from '../cart/service';
 
-export const orderRouter = Router();
+export const router = Router();
   
-orderRouter.post('/', async (
+router.post('/', async (
   req: Request,
-  res: Response<ResponseBody<{ order: Order }>>,
+  res: Response<ResponseBody<{ order: IOrder }>>,
 ) => {
   try {
     const cart = await getCartForUser(req.userId);

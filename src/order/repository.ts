@@ -1,26 +1,33 @@
 
-import { deleteCart } from '../cart/repository';
-import { Cart } from '../entities/cart';
-import { Order, OrderItems } from '../entities/order';
-import { User } from '../entities/user';
-import { DI } from '../orm';
+import { IUser } from '../user';
+import { ICart, deleteCart } from '../cart';
+import { Order, IOrder } from './entities';
 
-export const addOrder = async (userId: User['id'], cart: Cart): Promise<Order> => {
-  const items = await cart.items.reduce(async (acc, item) => {
-    const { id, title, description, price } = await item.product.load();
-    const items = await acc;
-    items.push({ product: { id, title, description, price }, count: item.count });
-    return items;
-  }, Promise.resolve([] as OrderItems[]));
+export const addOrder = async (userId: IUser['id'], cart: ICart): Promise<IOrder> => {
+  const order = new Order(
+    {
+      user: userId,
+      cart: cart.id,
+      items: cart.items.map(({ product, count }) => ({ product: { ...product }, count })),
+      payment: {
+        type: 'paypal',
+        creditCard: 'Priorbank Gold Platina'
+      },
+      delivery: {
+        type: 'post',
+        address: { country: 'Belarus', addressLine: 'Minsk, str. Lenina, 97' },
+      },
+      comments: 'Some comment',
+      status: 'created',
+      totalPrice: cart.getTotalPrice(),
+    },
+  );
 
-  const totalPrice = await cart.totalPrice;
-
-  const order = new Order({ userId, cartId: cart.id, items, totalPrice });
   try {
-    await DI.em.persistAndFlush(order);
+    await order.save();
     await deleteCart(cart);
   } catch (e) {
-    console.log(e);
+    throw new Error((e as Error).message);
   }
   
   return order;

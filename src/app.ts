@@ -1,21 +1,19 @@
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
-import * as orm from './orm';
-import { cartRouter } from './cart/controller';
-import { orderRouter } from './order/controller';
-import { productRouter } from './product/controller';
-import { authValidation } from './user/controller';
+import mongoose from 'mongoose';
+import { router as cartRouter } from './cart';
+import { router as orderRouter } from './order';
+import { router as productRouter } from './product';
+import { authValidation } from './user';
 
 const PORT = 8000;
 const HOST = 'localhost';
+const DB_URL = 'mongodb://192.168.31.210:27017/node-gmp-db';
 
 (async () => {
-  await orm.init();
-
   const app = express();
 
   app.use(bodyParser.json());
-  app.use(orm.requestContextMiddleware);
   app.use('/api', authValidation);
 
   app.use('/api/profile/cart', cartRouter);
@@ -23,6 +21,12 @@ const HOST = 'localhost';
   app.use('/api/profile/cart/checkout', orderRouter);
 
   app.use(errorHandler);
+  
+  try {
+    await mongoose.connect(DB_URL);
+  } catch(e) {
+    console.error(e);
+  }
 
   app.listen(PORT, HOST, () => {
     console.log('Server is started');

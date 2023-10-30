@@ -1,16 +1,15 @@
 import { Request, Response, Router } from 'express';
 import joi, { ValidationResult } from 'joi';
-import { ResponseBody } from '../types';
-import { Cart } from '../entities/cart';
-import { ItemData } from '../entities/item';
+import { ResponseBody } from '../models';
+import { getProduct } from '../product';
+import { ICart, ItemData } from './entities';
 import { getCartForUser, createCartForUser, deleteCart, updateCartItems } from './service';
-import { getProduct } from '../product/service';
 
-export const cartRouter = Router();
+export const router = Router();
   
-cartRouter.get('/', async (
+router.get('/', async (
   req: Request,
-  res: Response<ResponseBody<{ cart: Cart, totalPrice: number }>>,
+  res: Response<ResponseBody<{ cart: ICart, totalPrice: number }>>,
 ) => {
   try {
     let cart = await getCartForUser(req.userId);
@@ -19,7 +18,7 @@ cartRouter.get('/', async (
       cart = await createCartForUser(req.userId);
     }
 
-    const totalPrice = await cart.totalPrice;
+    const totalPrice = cart.getTotalPrice();
 
     res.send({ data: { cart, totalPrice }, error: null });
   } catch (err) {
@@ -29,21 +28,21 @@ cartRouter.get('/', async (
   }
 });
 
-cartRouter.put('/', async (
+router.put('/', async (
   req: Request<any, any, ItemData>,
-  res: Response<ResponseBody<{ cart: Cart, totalPrice: number }>>,
+  res: Response<ResponseBody<{ cart: ICart, totalPrice: number }>>,
 ) => {
-  const { error: validationError, value: CartItem } = validateCartItem(req.body);
+  const { error: validationError } = validateCartItem(req.body);
   if (validationError) {
     res.status(400);
     res.send({ data: null, error: { message: `Products are not valid: ${validationError.message}.` }});
     return;
   }
 
-  const product = await getProduct(CartItem.productId);
+  const product = await getProduct(req.body.productId);
   if (!product) {
     res.status(404);
-    res.send({ data: null, error: { message: `Product ${CartItem.productId} not found!` }});
+    res.send({ data: null, error: { message: `Product ${req.body.productId} not found!` }});
     return;
   }
 
@@ -53,10 +52,10 @@ cartRouter.put('/', async (
     res.send({ data: null, error: { message: `Cart for user ${req.userId} not found!` }});
     return;
   } else { 
-    const updatedCart = await updateCartItems(cart, CartItem);
+    const updatedCart = await updateCartItems(cart, product, req.body.count);
 
     if (updatedCart) {
-      const totalPrice = await updatedCart.totalPrice;
+      const totalPrice = updatedCart.getTotalPrice();
       res.send({ data: { cart: updatedCart, totalPrice }, error: null });
     } else {
       res.status(500);
@@ -66,7 +65,7 @@ cartRouter.put('/', async (
   }
 });
 
-cartRouter.delete('/', async (
+router.delete('/', async (
   req: Request,
   res: Response<ResponseBody<{ success: boolean }>>,
 ) => {

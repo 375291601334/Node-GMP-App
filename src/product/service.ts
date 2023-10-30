@@ -1,12 +1,12 @@
-import { Product } from '../entities/product';
+import { IProduct } from './entities';
 import * as repository from './repository';
 
-export const getProducts = async (): Promise<Product[]> => {
+export const getProducts = async (): Promise<IProduct[]> => {
   const products = await repository.getProducts();
   return products;
 };
 
-export const getProduct = async (productId: Product['id']): Promise<Product | null> => {
+export const getProduct = async (productId: IProduct['id']): Promise<IProduct | null> => {
   const product = await repository.getProduct(productId);
   return product;
 };
