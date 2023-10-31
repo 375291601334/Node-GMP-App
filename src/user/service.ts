@@ -9,6 +9,6 @@ export const getUserByEmail = async (email: IUser['email']): Promise<IUser | nul
   return await repository.getUserByEmail(email);
 };
 
-export const createUser = async (userData: { email: string; password: string; role: string }): Promise<IUser> => {
+export const createUser = async (userData: { email: string; password: string; role: string }): Promise<Omit<IUser, 'password' | '_doc'>> => {
   return await repository.addUser(userData);
 }

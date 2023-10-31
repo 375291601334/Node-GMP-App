@@ -9,7 +9,7 @@ export const router = Router();
 
 router.post('/register', async (
   req: Request<any, any, { email: string; password: string; role: string }>,
-  res: Response<ResponseBody<Omit<IUser, 'password'>>>,
+  res: Response<ResponseBody<Omit<IUser, 'password' | '_doc'>>>,
 ) => {
   const { error: validationError } = validateUserData(req.body);
   if (validationError) {
@@ -91,7 +91,19 @@ export const authTokenMiddleware = async (req: Request, res: Response, next: Nex
     return;
   }
 
-  req.userId = user.id;
+  req.user = user;
+  next();
+};
+
+export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.user;
+
+  if (user.role !== 'admin') {
+    res.status(403);
+    res.send({ data: null, error: { message: 'Only admin users can delete user cart' } });
+    return;
+  }
+
   next();
 };
 

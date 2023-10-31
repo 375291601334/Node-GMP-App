@@ -9,10 +9,11 @@ export const getUserByEmail = async (email: IUser['email']): Promise<IUser | nul
   return await User.findOne({ email }).exec();
 };
 
-export const addUser = async (userData: { email: string; password: string; role: string }): Promise<IUser> => {
+export const addUser = async (userData: { email: string; password: string; role: string }): Promise<Omit<IUser, 'password' | '_doc'>> => {
   const { password, ...data } = userData;
 
-  const user = new User({ ...data, password: getEncryptedPassword(password) });
+  const encryptedPassword = await getEncryptedPassword(password);
+  const user = new User({ ...data, password: encryptedPassword });
 
   try {
     await user.save();
@@ -20,5 +21,6 @@ export const addUser = async (userData: { email: string; password: string; role:
     throw new Error((e as Error).message);
   }
 
-  return user;
+  const { password: savedPassword, ...userWithoutPassword } = user._doc;
+  return userWithoutPassword;
 };

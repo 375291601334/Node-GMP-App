@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import joi, { ValidationResult } from 'joi';
 import { ResponseBody } from '../models';
+import { isAdmin } from '../user';
 import { getProduct } from '../product';
 import { ICart, ItemData } from './entities';
 import { getCartForUser, createCartForUser, deleteCart, updateCartItems } from './service';
@@ -12,10 +13,10 @@ router.get('/', async (
   res: Response<ResponseBody<{ cart: ICart, totalPrice: number }>>,
 ) => {
   try {
-    let cart = await getCartForUser(req.userId);
+    let cart = await getCartForUser(req.user.id);
 
     if (!cart) {
-      cart = await createCartForUser(req.userId);
+      cart = await createCartForUser(req.user.id);
     }
 
     const totalPrice = cart.getTotalPrice();
@@ -46,10 +47,10 @@ router.put('/', async (
     return;
   }
 
-  const cart = await getCartForUser(req.userId);
+  const cart = await getCartForUser(req.user.id);
   if (!cart) {
     res.status(404);
-    res.send({ data: null, error: { message: `Cart for user ${req.userId} not found!` }});
+    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` }});
     return;
   } else { 
     const updatedCart = await updateCartItems(cart, product, req.body.count);
@@ -65,15 +66,15 @@ router.put('/', async (
   }
 });
 
-router.delete('/', async (
+router.delete('/', isAdmin, async (
   req: Request,
   res: Response<ResponseBody<{ success: boolean }>>,
 ) => {
-  const cart = await getCartForUser(req.userId);
+  const cart = await getCartForUser(req.user.id);
 
   if (!cart) {
     res.status(404);
-    res.send({ data: null, error: { message: `Cart for user ${req.userId} not found!` }});
+    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` }});
     return;
   } else {
     const success = await deleteCart(cart);

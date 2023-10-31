@@ -6,6 +6,7 @@ export interface IUser extends mongoose.Document {
   email: string;
   password: string;
   role: 'admin' | 'user';
+  _doc: Omit<this,'_doc'>;
 }
 
 export type JwtTokenData = {

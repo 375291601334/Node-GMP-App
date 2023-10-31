@@ -4,9 +4,9 @@ import { JwtTokenData } from './entities';
 
 const TOKEN_KEY = 'some_very_secret_string';
 
-export const getEncryptedPassword = (password: string) => {
+export const getEncryptedPassword = async (password: string) => {
   const saltRounds = 10;
-  return bcript.hash(password, saltRounds);
+  return await bcript.hash(password, saltRounds);
 };
 
 export const isPasswordValid = async (passwordToCheck: string, encryptedPassword: string) => {
