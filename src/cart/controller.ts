@@ -88,7 +88,7 @@ router.delete('/', async (
   }
 });
 
-function validateCartItem(CartItem: ItemData): ValidationResult<ItemData> {
+function validateCartItem(cartItem: ItemData): ValidationResult<ItemData> {
   const schema = joi.object({
     productId: joi.string()
       .guid()
@@ -101,6 +101,6 @@ function validateCartItem(CartItem: ItemData): ValidationResult<ItemData> {
       .required(),
   });
 
-  const { error, value } = schema.validate(CartItem);
+  const { error, value } = schema.validate(cartItem);
   return { error, value };
 }

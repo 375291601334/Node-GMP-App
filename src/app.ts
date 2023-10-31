@@ -1,10 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import { router as userRouter } from './user';
 import { router as cartRouter } from './cart';
 import { router as orderRouter } from './order';
 import { router as productRouter } from './product';
-import { authValidation } from './user';
+import { authTokenMiddleware } from './user';
 
 const PORT = 8000;
 const HOST = 'localhost';
@@ -14,7 +15,10 @@ const DB_URL = 'mongodb://192.168.31.210:27017/node-gmp-db';
   const app = express();
 
   app.use(bodyParser.json());
-  app.use('/api', authValidation);
+  
+  app.use('/api/auth', userRouter);
+  
+  app.use('/api', authTokenMiddleware);
 
   app.use('/api/profile/cart', cartRouter);
   app.use('/api/products', productRouter);
