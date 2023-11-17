@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Express application for online shop which sells different types of products (like e.g Amazon). It has functionality for managing carts, creating orders and products.",
   "scripts": {
-    "start": "npx ts-node src/app.ts"
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/app.js",
+    "dev": "nodemon src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -18,6 +20,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
@@ -31,6 +34,7 @@
     "@types/jsonwebtoken": "^9.0.4",
     "@types/node": "^20.8.0",
     "@types/uuid": "^9.0.4",
+    "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }

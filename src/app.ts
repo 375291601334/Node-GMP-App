@@ -1,15 +1,16 @@
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import 'dotenv/config';
 import { router as userRouter } from './user';
 import { router as cartRouter } from './cart';
 import { router as orderRouter } from './order';
 import { router as productRouter } from './product';
 import { authTokenMiddleware } from './user';
 
-const PORT = 8000;
-const HOST = 'localhost';
-const DB_URL = 'mongodb://192.168.31.210:27017/node-gmp-db';
+const PORT = Number(process.env.PORT || '8000');
+const HOST = process.env.HOST || 'localhost';
+const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db';
 
 (async () => {
   const app = express();
