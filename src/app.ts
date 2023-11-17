@@ -1,4 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { Socket } from 'net';
+import { Server } from 'http';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import 'dotenv/config';
@@ -33,10 +35,49 @@ const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db
     console.error(e);
   }
 
-  app.listen(PORT, HOST, () => {
+  const server = app.listen(PORT, HOST, () => {
     console.log('Server is started');
   });
+
+  handleShutdown(server);
 })();
+
+function handleShutdown(server: Server) {
+  let connections = [] as Socket[];
+
+  server.on('connection', (connection) => {
+    connections.push(connection);
+    
+    connection.on('close', () => {
+      connections = connections.filter((currentConnection) => currentConnection !== connection);
+    });
+  });
+
+  function handler(signal: string) {
+    console.log(`Received ${signal} signal, shutting down gracefully`);
+  
+    server.close(() => {
+      console.log('Closed out remaining connections');
+      mongoose.connection.close(false);
+      process.exit(0);
+    });
+  
+    setTimeout(() => {
+      console.error('Could not close connections in time, forcefully shutting down');
+      mongoose.connection.close(false);
+      process.exit(1);
+    }, 20000);
+  
+    connections.forEach((connection) => connection.end());
+    
+    setTimeout(() => {
+      connections.forEach((connection) => connection.destroy());
+    }, 10000);
+  }
+
+  process.on('SIGTERM', () => handler('SIGTERM'));
+  process.on('SIGINT', () => handler('SIGINT'));
+}
 
 function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   res.status(500);
