@@ -18,6 +18,16 @@ const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db
   const app = express();
 
   app.use(bodyParser.json());
+
+  app.get('/api/health', (req, res) => {
+    if (mongoose.connection.readyState === 1) {
+      res.status(200);
+      res.send({ message: 'Application is healthy' });
+    } else {
+      res.status(500);
+      res.send({ message: 'Error connecting to database' });
+    }
+  });
   
   app.use('/api/auth', userRouter);
   
