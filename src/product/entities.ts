@@ -8,26 +8,24 @@ export interface IProduct extends mongoose.Document {
   price: number;
 }
 
-const ProductSchema = new mongoose.Schema<IProduct>(
-  {
-    _id: {
-      type: String,
-      default: () => uuid(),
-      alias: 'id',
-    },
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: false,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
+const ProductSchema = new mongoose.Schema<IProduct>({
+  _id: {
+    type: String,
+    default: () => uuid(),
+    alias: 'id',
   },
-);
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: false,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+});
 
 export const Product = mongoose.model<IProduct>('Product', ProductSchema);

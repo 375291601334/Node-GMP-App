@@ -14,11 +14,7 @@ export const isPasswordValid = async (passwordToCheck: string, encryptedPassword
 };
 
 export const getJwtToken = (data: JwtTokenData): string => {
-  return jwt.sign(
-    data,
-    TOKEN_KEY,
-    { expiresIn: '2h' },
-  );
+  return jwt.sign(data, TOKEN_KEY, { expiresIn: '2h' });
 };
 
 export const getUserDataFromJwtToken = (token: string): JwtTokenData => {

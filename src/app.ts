@@ -28,9 +28,9 @@ const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db
       res.send({ message: 'Error connecting to database' });
     }
   });
-  
+
   app.use('/api/auth', userRouter);
-  
+
   app.use('/api', authTokenMiddleware);
 
   app.use('/api/profile/cart', cartRouter);
@@ -38,10 +38,10 @@ const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db
   app.use('/api/profile/cart/checkout', orderRouter);
 
   app.use(errorHandler);
-  
+
   try {
     await mongoose.connect(DB_URL);
-  } catch(e) {
+  } catch (e) {
     console.error(e);
   }
 
@@ -57,7 +57,7 @@ function handleShutdown(server: Server) {
 
   server.on('connection', (connection) => {
     connections.push(connection);
-    
+
     connection.on('close', () => {
       connections = connections.filter((currentConnection) => currentConnection !== connection);
     });
@@ -65,21 +65,21 @@ function handleShutdown(server: Server) {
 
   function handler(signal: string) {
     console.log(`Received ${signal} signal, shutting down gracefully`);
-  
+
     server.close(() => {
       console.log('Closed out remaining connections');
       mongoose.connection.close(false);
       process.exit(0);
     });
-  
+
     setTimeout(() => {
       console.error('Could not close connections in time, forcefully shutting down');
       mongoose.connection.close(false);
       process.exit(1);
     }, 20000);
-  
+
     connections.forEach((connection) => connection.end());
-    
+
     setTimeout(() => {
       connections.forEach((connection) => connection.destroy());
     }, 10000);
@@ -91,5 +91,5 @@ function handleShutdown(server: Server) {
 
 function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   res.status(500);
-  res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
-};
+  res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
+}

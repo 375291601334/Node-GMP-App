@@ -7,74 +7,81 @@ import { createUser, getUser, getUserByEmail } from './service';
 
 export const router = Router();
 
-router.post('/register', async (
-  req: Request<any, any, { email: string; password: string; role: string }>,
-  res: Response<ResponseBody<Omit<IUser, 'password' | '_doc'>>>,
-) => {
-  const { error: validationError } = validateUserData(req.body);
-  if (validationError) {
-    res.status(400);
-    res.send({ data: null, error: { message: `User data are not valid: ${validationError.message}.` }});
-    return;
-  }
+router.post(
+  '/register',
+  (
+    req: Request<any, any, { email: string; password: string; role: string }>,
+    res: Response<ResponseBody<Omit<IUser, 'password' | '_doc'>>>,
+  ) => {
+    void (async () => {
+      const validationError = validateUserData(req.body);
+      if (validationError) {
+        res.status(400);
+        res.send({ data: null, error: { message: `User data are not valid: ${validationError.message}.` } });
+        return;
+      }
 
-  const { email, password, role } = req.body;
-  const user = await getUserByEmail(email);
+      const { email, password, role } = req.body;
+      const user = await getUserByEmail(email);
 
-  if (user) {
-    res.status(400);
-    res.send({ data: null, error: { message: `User with ${email} email already exists!` } });
-    return;
-  }
+      if (user) {
+        res.status(400);
+        res.send({ data: null, error: { message: `User with ${email} email already exists!` } });
+        return;
+      }
 
-  try {
-    const newUser = await createUser({ email, password, role });
-    res.send({ data: newUser, error: null });
-  } catch (err) {
-    res.status(500);
-    res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
-    return;
-  }
-});
+      try {
+        const newUser = await createUser({ email, password, role });
+        res.send({ data: newUser, error: null });
+      } catch (err) {
+        res.status(500);
+        res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
+        return;
+      }
+    })();
+  },
+);
 
-router.post('/login', async (
-  req: Request<any, any, { email: string; password: string }>,
-  res: Response<ResponseBody<{ token: string }>>,
-) => {
-  try {
-    const { email, password } = req.body;
+router.post(
+  '/login',
+  (req: Request<any, any, { email: string; password: string }>, res: Response<ResponseBody<{ token: string }>>) => {
+    void (async () => {
+      try {
+        const { email, password } = req.body;
 
-    const user = await getUserByEmail(email);
+        const user = await getUserByEmail(email);
 
-    if (!user) {
-      res.status(404);
-      res.send({ data: null, error: { message: `Not found user with email ${email}` } });
-      return;
-    }
+        if (!user) {
+          res.status(404);
+          res.send({ data: null, error: { message: `Not found user with email ${email}` } });
+          return;
+        }
 
-    if (!(await isPasswordValid(password, user.password))) {
-      res.status(401);
-      res.send({ data: null, error: { message: `Wrong password for ${email}` } });
-      return;
-    }
+        if (!(await isPasswordValid(password, user.password))) {
+          res.status(401);
+          res.send({ data: null, error: { message: `Wrong password for ${email}` } });
+          return;
+        }
 
-    const token = getJwtToken({ user_id: user.id, email, password, role: user.role });
-    res.send({ data: { token }, error: null });
-  } catch (err) {
-    res.status(500);
-    res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
-    return;
-  }
-});
+        const token = getJwtToken({ user_id: user.id, email, password, role: user.role });
+        res.send({ data: { token }, error: null });
+      } catch (err) {
+        res.status(500);
+        res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
+        return;
+      }
+    })();
+  },
+);
 
-export const authTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {  
+export const authTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {
     res.status(401);
     res.send({ data: null, error: { message: 'Authorization header is missing' } });
     return;
-  };
+  }
 
-  const [tokenType, token] = req.headers.authorization.split(' ');
+  const [, token] = req.headers.authorization.split(' ');
   const { user_id, email, password, role } = getUserDataFromJwtToken(token);
 
   if (!(user_id && email && password && role)) {
@@ -95,7 +102,7 @@ export const authTokenMiddleware = async (req: Request, res: Response, next: Nex
   next();
 };
 
-export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   const user = req.user;
 
   if (user.role !== 'admin') {
@@ -107,22 +114,15 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
   next();
 };
 
-function validateUserData(userData: { email: string; password: string; role: string }): ValidationResult<{ email: string; password: string; role: string }> {
+function validateUserData(userData: { email: string; password: string; role: string }): ValidationResult['error'] {
   const schema = joi.object({
-    email: joi.string()
-      .email()
-      .required(),
+    email: joi.string().email().required(),
 
-    password: joi.string()
-      .min(5)
-      .max(10)
-      .required(),
+    password: joi.string().min(5).max(10).required(),
 
-    role: joi.string()
-      .valid('admin', 'user')
-      .required()
+    role: joi.string().valid('admin', 'user').required(),
   });
 
-  const { error, value } = schema.validate(userData);
-  return { error, value };
-};
+  const { error } = schema.validate(userData);
+  return error;
+}
