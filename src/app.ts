@@ -1,26 +1,25 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import { Socket } from 'net';
 import { Server } from 'http';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import { router as userRouter } from './user';
+import { router as userRouter, authTokenMiddleware } from './user';
 import { router as cartRouter } from './cart';
 import { router as orderRouter } from './order';
 import { router as productRouter } from './product';
-import { authTokenMiddleware } from './user';
 
 const PORT = Number(process.env.PORT || '8000');
 const HOST = process.env.HOST || 'localhost';
 const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db';
 
-(async () => {
+void (async () => {
   const app = express();
 
   app.use(bodyParser.json());
 
   app.get('/api/health', (req, res) => {
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === mongoose.ConnectionStates.connected) {
       res.status(200);
       res.send({ message: 'Application is healthy' });
     } else {
@@ -31,7 +30,7 @@ const DB_URL = process.env.DB_URL || 'mongodb://192.168.31.210:27017/node-gmp-db
 
   app.use('/api/auth', userRouter);
 
-  app.use('/api', authTokenMiddleware);
+  app.use('/api', (req, res, next) => void authTokenMiddleware(req, res, next));
 
   app.use('/api/profile/cart', cartRouter);
   app.use('/api/products', productRouter);
@@ -89,7 +88,7 @@ function handleShutdown(server: Server) {
   process.on('SIGINT', () => handler('SIGINT'));
 }
 
-function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+function errorHandler(err: Error, req: Request, res: Response) {
   res.status(500);
   res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
 }
