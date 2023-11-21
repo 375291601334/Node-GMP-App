@@ -7,72 +7,68 @@ import { createUser, getUser, getUserByEmail } from './service';
 
 export const router = Router();
 
-router.post(
-  '/register',
-  (
-    req: Request<any, any, { email: string; password: string; role: string }>,
-    res: Response<ResponseBody<Omit<IUser, 'password' | '_doc'>>>,
-  ) => {
-    void (async () => {
-      const validationError = validateUserData(req.body);
-      if (validationError) {
-        res.status(400);
-        res.send({ data: null, error: { message: `User data are not valid: ${validationError.message}.` } });
-        return;
-      }
+router.post('/register', (req, res) => void registerHandler(req, res));
+router.post('/login', (req, res) => void loginHandler(req, res));
 
-      const { email, password, role } = req.body;
-      const user = await getUserByEmail(email);
+async function registerHandler(
+  req: Request<any, any, { email: string; password: string; role: string }>,
+  res: Response<ResponseBody<Omit<IUser, 'password' | '_doc'>>>,
+) {
+  const validationError = validateUserData(req.body);
+  if (validationError) {
+    res.status(400);
+    res.send({ data: null, error: { message: `User data are not valid: ${validationError.message}.` } });
+    return;
+  }
 
-      if (user) {
-        res.status(400);
-        res.send({ data: null, error: { message: `User with ${email} email already exists!` } });
-        return;
-      }
+  const { email, password, role } = req.body;
+  const user = await getUserByEmail(email);
 
-      try {
-        const newUser = await createUser({ email, password, role });
-        res.send({ data: newUser, error: null });
-      } catch (err) {
-        res.status(500);
-        res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
-        return;
-      }
-    })();
-  },
-);
+  if (user) {
+    res.status(400);
+    res.send({ data: null, error: { message: `User with ${email} email already exists!` } });
+    return;
+  }
 
-router.post(
-  '/login',
-  (req: Request<any, any, { email: string; password: string }>, res: Response<ResponseBody<{ token: string }>>) => {
-    void (async () => {
-      try {
-        const { email, password } = req.body;
+  try {
+    const newUser = await createUser({ email, password, role });
+    res.send({ data: newUser, error: null });
+  } catch (err) {
+    res.status(500);
+    res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
+    return;
+  }
+}
 
-        const user = await getUserByEmail(email);
+async function loginHandler(
+  req: Request<any, any, { email: string; password: string }>,
+  res: Response<ResponseBody<{ token: string }>>,
+) {
+  try {
+    const { email, password } = req.body;
 
-        if (!user) {
-          res.status(404);
-          res.send({ data: null, error: { message: `Not found user with email ${email}` } });
-          return;
-        }
+    const user = await getUserByEmail(email);
 
-        if (!(await isPasswordValid(password, user.password))) {
-          res.status(401);
-          res.send({ data: null, error: { message: `Wrong password for ${email}` } });
-          return;
-        }
+    if (!user) {
+      res.status(404);
+      res.send({ data: null, error: { message: `Not found user with email ${email}` } });
+      return;
+    }
 
-        const token = getJwtToken({ user_id: user.id, email, password, role: user.role });
-        res.send({ data: { token }, error: null });
-      } catch (err) {
-        res.status(500);
-        res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
-        return;
-      }
-    })();
-  },
-);
+    if (!(await isPasswordValid(password, user.password))) {
+      res.status(401);
+      res.send({ data: null, error: { message: `Wrong password for ${email}` } });
+      return;
+    }
+
+    const token = getJwtToken({ user_id: user.id, email, password, role: user.role });
+    res.send({ data: { token }, error: null });
+  } catch (err) {
+    res.status(500);
+    res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
+    return;
+  }
+}
 
 export const authTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {
