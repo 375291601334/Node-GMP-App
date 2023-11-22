@@ -1,4 +1,3 @@
-
 import { Product, IProduct } from './entities';
 
 export const getProducts = async (): Promise<IProduct[]> => {

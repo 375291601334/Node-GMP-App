@@ -6,7 +6,7 @@ export interface IUser extends mongoose.Document {
   email: string;
   password: string;
   role: 'admin' | 'user';
-  _doc: Omit<this,'_doc'>;
+  _doc: Omit<this, '_doc'>;
 }
 
 export type JwtTokenData = {
@@ -14,30 +14,28 @@ export type JwtTokenData = {
   email: string;
   password: string;
   role: string;
-}
+};
 
-const UserSchema = new mongoose.Schema<IUser>(
-  {
-    _id: {
-      type: String,
-      default: () => uuid(),
-      alias: 'id',
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'user'],
-      required: true,
-    }
+const UserSchema = new mongoose.Schema<IUser>({
+  _id: {
+    type: String,
+    default: () => uuid(),
+    alias: 'id',
   },
-);
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'user'],
+    required: true,
+  },
+});
 
 export const User = mongoose.model<IUser>('User', UserSchema);

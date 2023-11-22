@@ -7,25 +7,30 @@ export type ItemData = {
   count: number;
 };
 
-interface ICartItem extends mongoose.Document {
+export interface ICartItem extends mongoose.Document {
+  id: string;
   product: mongoose.PopulatedDoc<mongoose.Document<string> & IProduct>;
   count: number;
 }
 
-const CartItemSchema = new mongoose.Schema<ICartItem>(
-  {
-    product: {
-      type: String,
-      ref: 'Product',
-      required: true,
-      autopopulate: true,
-    },
-    count: {
-      type: Number,
-      required: true,
-    },
+const CartItemSchema = new mongoose.Schema<ICartItem>({
+  _id: {
+    type: String,
+    default: () => uuid(),
+    alias: 'id',
   },
-);
+  product: {
+    type: String,
+    ref: 'Product',
+    required: true,
+    autopopulate: true,
+  },
+  count: {
+    type: Number,
+    required: true,
+  },
+});
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 CartItemSchema.plugin(require('mongoose-autopopulate'));
 
 export interface ICart extends mongoose.Document {
@@ -36,37 +41,36 @@ export interface ICart extends mongoose.Document {
   getTotalPrice: () => number;
 }
 
-type ICartModel = mongoose.Model<ICart, {}, ICart>;
+type ICartModel = mongoose.Model<ICart, object, ICart>;
 
-const CartSchema = new mongoose.Schema<ICart, ICartModel, ICart>(
-  {
-    _id: {
-      type: String,
-      default: () => uuid(),
-      alias: 'id',
-    },
-    userId: {
-      type: String,
-      ref: 'User',
-      required: true,
-    },
-    isDeleted: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    items: {
-      type: [CartItemSchema],
-      required: true,
-      autopopulate: true,
-    },
+const CartSchema = new mongoose.Schema<ICart, ICartModel, ICart>({
+  _id: {
+    type: String,
+    default: () => uuid(),
+    alias: 'id',
   },
-);
+  userId: {
+    type: String,
+    ref: 'User',
+    required: true,
+  },
+  isDeleted: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  items: {
+    type: [CartItemSchema],
+    required: true,
+    autopopulate: true,
+  },
+});
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 CartSchema.plugin(require('mongoose-autopopulate'));
 
 CartSchema.methods.getTotalPrice = function (): number {
   return this.items.reduce((totalPrice, item) => {
-    const itemPrice = item.count * item.product.price;
+    const itemPrice = item.count * (item.product as IProduct).price;
     return totalPrice + itemPrice;
   }, 0);
 };

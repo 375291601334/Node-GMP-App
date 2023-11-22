@@ -7,11 +7,12 @@ import { ICart, ItemData } from './entities';
 import { getCartForUser, createCartForUser, deleteCart, updateCartItems } from './service';
 
 export const router = Router();
-  
-router.get('/', async (
-  req: Request,
-  res: Response<ResponseBody<{ cart: ICart, totalPrice: number }>>,
-) => {
+
+router.get('/', (req, res) => void getCartHandler(req, res));
+router.put('/', (req, res) => void putCartHandler(req, res));
+router.delete('/', isAdmin, (req, res) => void deleteCartHandler(req, res));
+
+export async function getCartHandler(req: Request, res: Response<ResponseBody<{ cart: ICart; totalPrice: number }>>) {
   try {
     let cart = await getCartForUser(req.user.id);
 
@@ -24,35 +25,35 @@ router.get('/', async (
     res.send({ data: { cart, totalPrice }, error: null });
   } catch (err) {
     res.status(500);
-    res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
+    res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
     return;
   }
-});
+}
 
-router.put('/', async (
+export async function putCartHandler(
   req: Request<any, any, ItemData>,
-  res: Response<ResponseBody<{ cart: ICart, totalPrice: number }>>,
-) => {
-  const { error: validationError } = validateCartItem(req.body);
+  res: Response<ResponseBody<{ cart: ICart; totalPrice: number }>>,
+) {
+  const validationError = validateCartItem(req.body);
   if (validationError) {
     res.status(400);
-    res.send({ data: null, error: { message: `Products are not valid: ${validationError.message}.` }});
+    res.send({ data: null, error: { message: `Products are not valid: ${validationError.message}.` } });
     return;
   }
 
   const product = await getProduct(req.body.productId);
   if (!product) {
     res.status(404);
-    res.send({ data: null, error: { message: `Product ${req.body.productId} not found!` }});
+    res.send({ data: null, error: { message: `Product ${req.body.productId} not found!` } });
     return;
   }
 
   const cart = await getCartForUser(req.user.id);
   if (!cart) {
     res.status(404);
-    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` }});
+    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` } });
     return;
-  } else { 
+  } else {
     const updatedCart = await updateCartItems(cart, product, req.body.count);
 
     if (updatedCart) {
@@ -60,48 +61,39 @@ router.put('/', async (
       res.send({ data: { cart: updatedCart, totalPrice }, error: null });
     } else {
       res.status(500);
-      res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
+      res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
       return;
     }
   }
-});
+}
 
-router.delete('/', isAdmin, async (
-  req: Request,
-  res: Response<ResponseBody<{ success: boolean }>>,
-) => {
+export async function deleteCartHandler(req: Request, res: Response<ResponseBody<{ success: boolean }>>) {
   const cart = await getCartForUser(req.user.id);
 
   if (!cart) {
     res.status(404);
-    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` }});
+    res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` } });
     return;
   } else {
     const success = await deleteCart(cart);
 
     if (!success) {
       res.status(500);
-      res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
+      res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
       return;
     }
 
-    res.send({ data: { success }, error: null  });
+    res.send({ data: { success }, error: null });
   }
-});
+}
 
-function validateCartItem(cartItem: ItemData): ValidationResult<ItemData> {
+function validateCartItem(cartItem: ItemData): ValidationResult['error'] {
   const schema = joi.object({
-    productId: joi.string()
-      .guid()
-      .min(1)
-      .max(50)
-      .required(),
+    productId: joi.string().guid().min(1).max(50).required(),
 
-    count: joi.number()
-      .integer()
-      .required(),
+    count: joi.number().integer().required(),
   });
 
-  const { error, value } = schema.validate(cartItem);
-  return { error, value };
+  const { error } = schema.validate(cartItem);
+  return error;
 }

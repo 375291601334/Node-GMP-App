@@ -9,7 +9,11 @@ export const getUserByEmail = async (email: IUser['email']): Promise<IUser | nul
   return await User.findOne({ email }).exec();
 };
 
-export const addUser = async (userData: { email: string; password: string; role: string }): Promise<Omit<IUser, 'password' | '_doc'>> => {
+export const addUser = async (userData: {
+  email: string;
+  password: string;
+  role: string;
+}): Promise<Omit<IUser, 'password' | '_doc'>> => {
   const { password, ...data } = userData;
 
   const encryptedPassword = await getEncryptedPassword(password);
@@ -21,6 +25,7 @@ export const addUser = async (userData: { email: string; password: string; role:
     throw new Error((e as Error).message);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password: savedPassword, ...userWithoutPassword } = user._doc;
   return userWithoutPassword;
 };

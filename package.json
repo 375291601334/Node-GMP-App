@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "Express application for online shop which sells different types of products (like e.g Amazon). It has functionality for managing carts, creating orders and products.",
   "scripts": {
-    "start": "npx ts-node src/app.ts"
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/app.js",
+    "dev": "nodemon src/app.ts",
+    "lint": "eslint --ext .ts src/**/*.ts --max-warnings 0",
+    "format": "eslint --ext .ts src/**/*.ts --max-warnings 0 --fix && npx prettier src/**/*.ts --write",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -18,6 +25,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
@@ -28,10 +36,26 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.1",
     "@types/express": "^4.17.18",
+    "@types/jest": "^29.0.0",
     "@types/jsonwebtoken": "^9.0.4",
     "@types/node": "^20.8.0",
     "@types/uuid": "^9.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.0",
+    "jest": "^29.0.3",
+    "lint-staged": "^15.1.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
+  },
+  "optionalDependencies": {
+    "@commitlint/cli": "18.4.3",
+    "@commitlint/config-conventional": "18.4.3"
   }
 }

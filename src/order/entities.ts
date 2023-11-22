@@ -30,62 +30,60 @@ export interface IOrderItems {
   count: number;
 }
 
-const OrderSchema = new mongoose.Schema<IOrder>(
-  {
-    _id: {
-      type: String,
-      default: () => uuid(),
-      alias: 'id',
-    },
-    user: {
-      type: String,
-      ref: 'User',
-      required: true,
-    },
-    cart: {
-      type: String,
-      ref: 'Cart',
-      required: true,
-    },
-    items: Array<IOrderItems>,
-    payment: {
-      type: {
-        type: String,
-        required: false,
-      },
-      address: {
-        type: mongoose.Schema.Types.Mixed,
-        required: false,
-      },
-      creditCard: {
-        type: mongoose.Schema.Types.Mixed,
-        required: false,
-      },
-    },
-    delivery: {
-      type: {
-        type: String,
-        required: false,
-      },
-      address: {
-        type: mongoose.Schema.Types.Mixed,
-        required: true,
-      },
-    },
-    comments: {
+const OrderSchema = new mongoose.Schema<IOrder>({
+  _id: {
+    type: String,
+    default: () => uuid(),
+    alias: 'id',
+  },
+  user: {
+    type: String,
+    ref: 'User',
+    required: true,
+  },
+  cart: {
+    type: String,
+    ref: 'Cart',
+    required: true,
+  },
+  items: Array<IOrderItems>,
+  payment: {
+    type: {
       type: String,
       required: false,
     },
-    status: {
-      type: String,
-      enum: ['created', 'completed'],
-      required: true,
+    address: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
     },
-    totalPrice: {
-      type: Number,
+    creditCard: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+    },
+  },
+  delivery: {
+    type: {
+      type: String,
+      required: false,
+    },
+    address: {
+      type: mongoose.Schema.Types.Mixed,
       required: true,
     },
   },
-);
+  comments: {
+    type: String,
+    required: false,
+  },
+  status: {
+    type: String,
+    enum: ['created', 'completed'],
+    required: true,
+  },
+  totalPrice: {
+    type: Number,
+    required: true,
+  },
+});
 
 export const Order = mongoose.model<IOrder>('Order', OrderSchema);
