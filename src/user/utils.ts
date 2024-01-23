@@ -2,7 +2,7 @@ import * as bcript from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { JwtTokenData } from './entities';
 
-const TOKEN_KEY = 'some_very_secret_string';
+const TOKEN_KEY = process.env.TOKEN_KEY as string;
 
 export const getEncryptedPassword = async (password: string) => {
   const saltRounds = 10;
@@ -14,11 +14,7 @@ export const isPasswordValid = async (passwordToCheck: string, encryptedPassword
 };
 
 export const getJwtToken = (data: JwtTokenData): string => {
-  return jwt.sign(
-    data,
-    TOKEN_KEY,
-    { expiresIn: '2h' },
-  );
+  return jwt.sign(data, TOKEN_KEY, { expiresIn: '2h' });
 };
 
 export const getUserDataFromJwtToken = (token: string): JwtTokenData => {

@@ -5,29 +5,28 @@ import { IOrder } from './entities';
 import { createOrder } from './service';
 
 export const router = Router();
-  
-router.post('/', async (
-  req: Request,
-  res: Response<ResponseBody<{ order: IOrder }>>,
-) => {
+
+router.post('/', (req, res) => void postOrderHandler(req, res));
+
+async function postOrderHandler(req: Request, res: Response<ResponseBody<{ order: IOrder }>>) {
   try {
     const cart = await getCartForUser(req.user.id);
 
     if (!cart) {
       res.status(404);
-      res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` }});
+      res.send({ data: null, error: { message: `Cart for user ${req.user.id} not found!` } });
       return;
     } else if (cart.items.length == 0) {
       res.status(400);
-      res.send({ data: null, error: { message: `Cart for user ${req.user.id} is empty!` }});
-      return;    
-    } else { 
+      res.send({ data: null, error: { message: `Cart for user ${req.user.id} is empty!` } });
+      return;
+    } else {
       const order = await createOrder(req.user.id, cart);
       res.send({ data: { order }, error: null });
     }
   } catch (err) {
     res.status(500);
-    res.send({ data: null, error: { message: 'Ooops, something went wrong' }});
+    res.send({ data: null, error: { message: 'Ooops, something went wrong' } });
     return;
   }
-});
+}
